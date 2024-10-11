@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-const static double PI = 3.14159265;
+const static double PI = 3.14159266;
 
 class Planet {
 public:
