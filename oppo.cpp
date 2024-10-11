@@ -1,154 +1,163 @@
-﻿//Чумутин Е. КИ23-07Б
-
-#include <iomanip>
+﻿#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 
-const static double PI = 3.14159265;
+const static double PI = 3.14159266;
 
 class Planet {
-public: 
-	std::string name;
-	std::string date;
-	double radius;
+public:
+    std::string name;
+    std::string date;
+    double radius;
 
-	Planet(std::string Name, std::string Date, double Radius) {
-		name = Name;
-		date = Date;
-		radius = Radius;
-	};
+    Planet(std::string Name, std::string Date, double Radius) {
+        name = Name;
+        date = Date;
+        radius = Radius;
+    }
 
-	double get_area() const {
-		return 4 * PI * radius * radius;
-	};
+    double get_area() const { return 4 * PI * radius * radius; }
 
-	void print() const{
-		std::cout << std::fixed << std::setprecision(2) <<
-			"Name: " << name << "\t Date of the research: " 
-			<< date << "\t Radius: " << radius << std::endl;
-	}
+    void print() const {
+        std::cout << std::fixed << std::setprecision(2) << "Name: " << name
+            << "\t Date of the research: " << date << "\t Radius: " << radius
+            << std::endl;
+    }
 
-	Planet() = default;
+    Planet() = default;
 };
 
-static std::string get_name(std::string a) {
-	int count = 0;
-	int pos1, pos2;
-	for (int i = 0; i < a.length(); i++) {
-		if (a[i] == '"') {
-			if (count == 0) {
-				pos1 = i;
-			}
-			if (count == 1) {
-				pos2 = i - pos1 + 1;
-				return a.substr(pos1, pos2);
-			}
-			count += 1;
-		}
-	}
+// Функция для получения имени планеты из строки
+static std::string GetName(std::string &a) {
+    int count = 0, pos1, pos2;
+    for (int i = 0; i < a.length(); i++) {
+        if (a[i] == '"') {
+            if (count == 0) {
+                pos1 = i;
+            }else {
+                pos2 = i - pos1 + 1;
+                std::string name = a.substr(pos1, pos2);
+                a.erase(pos1, pos2 + 1);
+                return name;
+            }
+            count += 1;
+        }
+    }
+    return "";  // Возвращаем пустую строку, если имя не найдено
 }
 
-static std::string get_date(std::string a) {
-	for (int i = 0; i < a.length(); i++) {
-		if (a[i] == '.' && a[i + 3] == '.') {
-			int year = stoi(a.substr(i - 4, 4)), month = stoi(a.substr(i + 1, 2)), day = stoi(a.substr(i + 4, 2));
-			if ((1 <= month && month <= 12) && (1 <= day && day <= 31)) {
-				return a.substr(i - 4, 10);
-			}
-			else {
-				std::cout << "incorrect date in " << a.substr(i - 4, 10);
-				exit(-1);
-			}
-		}
-	}
+// Функция для получения даты исследования из строки
+static std::string GetDate(std::string &a) {
+    for (int i = 0; i < a.length(); i++) {
+        if (a[i] == '.' && a[i + 3] == '.') {
+            int year = stoi(a.substr(i - 4, 4)),
+                month = stoi(a.substr(i + 1, 2)),
+                day = stoi(a.substr(i + 4, 2));
+            if ((1 <= month && month <= 12) && (1 <= day && day <= 31)) {
+                std::string date = a.substr(i - 4, 10);
+                a.erase(i - 4, 10);
+                return date;
+            }
+            else {
+                std::cout << "incorrect date in " << a.substr(i - 4, 10)
+                    << std::endl;
+                return "";
+            }
+        }
+    }
+    return "";  // Возвращаем пустую строку, если дата не найдена
 }
 
-static float get_radius(std::string a) {
-	for (int i = 0; i < a.length(); i++) {
-		if (a[i] == '.' && a[i + 3] == '.') {
-			a.erase(i - 4, 11);
-			break;
-		}
-	}
-	int pos1, pos2, count1 = 0;
-	for (int i = 0; i < a.length(); i++) {
-		if (a[i] == '\"') {
-			if (count1 == 0) {
-				pos1 = i;
-			}
-			if (count1 == 1) {
-				pos2 = i;
-				a.erase(pos1, pos2 + 1);
-				break;
-			}
-			count1 += 1;
-		}
-	}
-	for (int i = 0; i < a.length(); i++) {
-		if (a[i] != ' ') {
-			return stof(a.substr(i, a.length()));
-		}
-	}
+// Функция для получения радиуса планеты из строки
+static float GetRadius(std::string a) {
+    for (int i = 0; i < a.length(); i++) {
+        if (a[i] != ' ') {
+            return stof(a.substr(i, a.length()));
+        }
+    }
+    return 0.0;  // Возвращаем 0.0, если радиус не найден
 }
 
-static void area_sort(std::vector<Planet>& vec) {
-	int n = vec.size();
-	for (int i = 0; i < n - 1; ++i) {
-		for (int j = 0; j < n - i - 1; ++j) {
-			if (vec[j].radius > vec[j + 1].radius) {
-				std::swap(vec[j], vec[j + 1]);
-			}
-		}
-	}
+//Функция дял вывода планет с определенной площадью
+static bool AreaRange(int a1, int a2, int area) {
+    if (a1 <= area && area <= a2) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
-static void date_sort(std::vector<Planet>& vec) {
-	int n = vec.size();
-	for (int i = 0; i < n - 1; ++i) {
-		for (int j = 0; j < n - i - 1; ++j) {
-			if (vec[j].date > vec[j + 1].date) {
-				std::swap(vec[j], vec[j + 1]);
-			}
-		}
-	}
+// Функция для сортировки вектора Planet по дате
+static void DateSort(std::vector<Planet>& vec) {
+    int n = vec.size();
+    for (int i = 0; i < n - 1; ++i) {
+        for (int j = 0; j < n - i - 1; ++j) {
+            if (vec[j].date > vec[j + 1].date) {
+                std::swap(vec[j], vec[j + 1]);
+            }
+        }
+    }
+}
+
+// Функция для сортировки вектора Planet по площади
+static void AreaSort(std::vector<Planet>& vec) {
+    int n = vec.size();
+    for (int i = 0; i < n - 1; ++i) {
+        for (int j = 0; j < n - i - 1; ++j) {
+            if (vec[j].radius > vec[j + 1].radius) {
+                std::swap(vec[j], vec[j + 1]);
+            }
+        }
+    }
 }
 
 int main() {
-	std::string s;
-	std::ifstream in("in.txt");
-	std::vector <Planet> planet_arr;
-	if (!in.is_open()) {
-		std::cerr << "File did not openned";
-		exit(-1);
-	}
-	else {
-		std::string s; int count = 0;
-		while (getline(in, s)) {
-			Planet planet = { get_name(s), get_date(s), get_radius(s) };
-			planet_arr.push_back(planet);
-			count += 1;
-		}
-	}
-	in.close();
+    std::ifstream in("in.txt");
+    std::vector<Planet> planet_arr;
+    if (!in.is_open()) {
+        std::cerr << "File did not openned" << std::endl;
+        exit(-1);
+    }
+    else {
+        std::string s;
+        while (getline(in, s)) {
+            std::string name = GetName(s), date = GetDate(s); float radius = GetRadius(s);
+            Planet planet = { name, date, radius };
+            planet_arr.push_back(planet);
+        }
+    }
+    in.close();
 
-	int choice;
-	std::cout << "date_sort = 1\narea_sort = 2\n";
-	std::cin >> choice;
-	switch (choice) {
-	case 1:
-		date_sort(planet_arr);
-		for (int i = 0; i < planet_arr.size(); i++) {
-			planet_arr[i].print();
-		}
-		break;
-	case 2: 
-		area_sort(planet_arr);
-		for (int i = 0; i < planet_arr.size(); i++) {
-			planet_arr[i].print();
-			std::cout << "Area: " << planet_arr[i].get_area() << std::endl;
-		}
-		break;
-	}
+    int choice;
+    std::cout << "DateSort = 1\nAreaSort = 2\nAreaRangePrint = 3\n";
+    std::cin >> choice;
+    switch (choice) {
+    case 1:
+        DateSort(planet_arr);
+        for (int i = 0; i < planet_arr.size(); i++) {
+            planet_arr[i].print();
+        }
+        break;
+    case 2:
+        AreaSort(planet_arr);
+        for (int i = 0; i < planet_arr.size(); i++) {
+            planet_arr[i].print();
+            std::cout << "Area: " << planet_arr[i].get_area() << std::endl;
+        }
+        break;
+    case 3:
+        float Area1, Area2;
+        std::cout << "Area_1: "; std::cin >> Area1;
+        std::cout << "Area_2: "; std::cin >> Area2;
+        for (int i = 0; i < planet_arr.size(); i++) {
+            if (AreaRange(Area1, Area2, planet_arr[i].get_area())) {
+                planet_arr[i].print();
+                std::cout << "Area: " << planet_arr[i].get_area() << std::endl;
+            }
+        }
+    }
+    return 0;
 }
