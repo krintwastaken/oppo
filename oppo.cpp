@@ -1,8 +1,9 @@
-﻿#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
+#include <iomanip>  
+#include <iostream>  
+#include <fstream>  
+#include <vector>  
+#include <string>  
+#include <algorithm> // Добавлено для std::sort  
 
 const static double PI = 3.14159266;
 
@@ -29,14 +30,15 @@ public:
     Planet() = default;
 };
 
-// Функция для получения имени планеты из строки
-static std::string GetName(std::string &a) {
+// Функция для получения имени планеты из строки  
+static std::string GetName(std::string& a) {
     int count = 0, pos1, pos2;
     for (int i = 0; i < a.length(); i++) {
         if (a[i] == '"') {
             if (count == 0) {
                 pos1 = i;
-            }else {
+            }
+            else {
                 pos2 = i - pos1 + 1;
                 std::string name = a.substr(pos1, pos2);
                 a.erase(pos1, pos2 + 1);
@@ -45,11 +47,11 @@ static std::string GetName(std::string &a) {
             count += 1;
         }
     }
-    return "";  // Возвращаем пустую строку, если имя не найдено
+    return "";  // Возвращаем пустую строку, если имя не найдено  
 }
 
-// Функция для получения даты исследования из строки
-static std::string GetDate(std::string &a) {
+// Функция для получения даты исследования из строки  
+static std::string GetDate(std::string& a) {
     for (int i = 0; i < a.length(); i++) {
         if (a[i] == '.' && a[i + 3] == '.') {
             int year = stoi(a.substr(i - 4, 4)),
@@ -67,20 +69,20 @@ static std::string GetDate(std::string &a) {
             }
         }
     }
-    return "";  // Возвращаем пустую строку, если дата не найдена
+    return "";  // Возвращаем пустую строку, если дата не найдена  
 }
 
-// Функция для получения радиуса планеты из строки
+// Функция для получения радиуса планеты из строки  
 static float GetRadius(std::string a) {
     for (int i = 0; i < a.length(); i++) {
         if (a[i] != ' ') {
             return stof(a.substr(i, a.length()));
         }
     }
-    return 0.0;  // Возвращаем 0.0, если радиус не найден
+    return 0.0;  // Возвращаем 0.0, если радиус не найден  
 }
 
-//Функция дял вывода планет с определенной площадью
+// Функция дял вывода планет с определенной площадью  
 static bool AreaRange(int a1, int a2, int area) {
     if (a1 <= area && area <= a2) {
         return true;
@@ -90,35 +92,11 @@ static bool AreaRange(int a1, int a2, int area) {
     }
 }
 
-// Функция для сортировки вектора Planet по дате
-static void DateSort(std::vector<Planet>& vec) {
-    int n = vec.size();
-    for (int i = 0; i < n - 1; ++i) {
-        for (int j = 0; j < n - i - 1; ++j) {
-            if (vec[j].date > vec[j + 1].date) {
-                std::swap(vec[j], vec[j + 1]);
-            }
-        }
-    }
-}
-
-// Функция для сортировки вектора Planet по площади
-static void AreaSort(std::vector<Planet>& vec) {
-    int n = vec.size();
-    for (int i = 0; i < n - 1; ++i) {
-        for (int j = 0; j < n - i - 1; ++j) {
-            if (vec[j].radius > vec[j + 1].radius) {
-                std::swap(vec[j], vec[j + 1]);
-            }
-        }
-    }
-}
-
 int main() {
     std::ifstream in("in.txt");
     std::vector<Planet> planet_arr;
     if (!in.is_open()) {
-        std::cerr << "File did not openned" << std::endl;
+        std::cerr << "File did not open" << std::endl;
         exit(-1);
     }
     else {
@@ -136,28 +114,33 @@ int main() {
     std::cin >> choice;
     switch (choice) {
     case 1:
-        DateSort(planet_arr);
-        for (int i = 0; i < planet_arr.size(); i++) {
-            planet_arr[i].print();
+        std::sort(planet_arr.begin(), planet_arr.end(), [](const Planet& a, const Planet& b) {
+            return a.date < b.date; // Сортировка по дате
+            });
+        for (const auto& planet : planet_arr) {
+            planet.print();
         }
         break;
     case 2:
-        AreaSort(planet_arr);
-        for (int i = 0; i < planet_arr.size(); i++) {
-            planet_arr[i].print();
-            std::cout << "Area: " << planet_arr[i].get_area() << std::endl;
+        std::sort(planet_arr.begin(), planet_arr.end(), [](const Planet& a, const Planet& b) {
+            return a.radius < b.radius; //Сортировка по области
+            });
+        for (const auto& planet : planet_arr) {
+            planet.print();
+            std::cout << "Area: " << planet.get_area() << std::endl;
         }
         break;
     case 3:
         float Area1, Area2;
         std::cout << "Area_1: "; std::cin >> Area1;
         std::cout << "Area_2: "; std::cin >> Area2;
-        for (int i = 0; i < planet_arr.size(); i++) {
-            if (AreaRange(Area1, Area2, planet_arr[i].get_area())) {
-                planet_arr[i].print();
-                std::cout << "Area: " << planet_arr[i].get_area() << std::endl;
+        for (const auto& planet : planet_arr) {
+            if (AreaRange(Area1, Area2, planet.get_area())) {
+                planet.print();
+                std::cout << "Area: " << planet.get_area() << std::endl; //Сортировка по размеру области
             }
-        }
+        } 
+        break;
     }
     return 0;
 }
