@@ -30,10 +30,11 @@ public:
     }
 };
 
-enum class SortOptions::int {
+
+enum class SortOptions  : int {
     datesort = 0,
     areasort,
-    _printrange_
+    printrange
 };
 
 // Функция для получения имени планеты из строки
@@ -80,16 +81,16 @@ static void AreaRange(int min_area, int max_area, std::vector<Planet>& planet_ar
     }
 }
 
-auto sortPlanets = [](std::vector<Planet>& vec, int choice) {
+auto sortPlanets = [](std::vector<Planet>& vec, SortOptions choice) {
     int n = vec.size();
     for (int i = 0; i < n - 1; ++i) {
         for (int j = 0; j < n - i - 1; ++j) {
-            if (choice == _datesort_) {
+            if (choice == SortOptions::datesort) {
                 if (vec[j].date > vec[j + 1].date) {
                     std::swap(vec[j], vec[j + 1]);
                 }
             }
-            else if (choice == _areasort_) {
+            else if (choice == SortOptions::areasort) {
                 if (vec[j].radius > vec[j + 1].radius) {
                     std::swap(vec[j], vec[j + 1]);
                 }
@@ -119,13 +120,13 @@ int main() {
     std::cout << "Sort by date = 0\nSort by area = 1\nPrint area in range = 2\n";
     int choice; std::cin >> choice;
     switch (choice) {
-    case _datesort_:
+    case SortOptions::datesort:
         sortPlanets(planet_arr, _datesort_);
         break;
-    case _areasort_:
+    case SortOptions::areasort:
         sortPlanets(planet_arr, _areasort_);
         break;
-    case _printrange_:
+    case SortOptions::printrange:
         float area_min, area_max;
         std::cout << "Bottom area: "; std::cin >> area_min;
         std::cout << "Top area: "; std::cin >> area_max;
