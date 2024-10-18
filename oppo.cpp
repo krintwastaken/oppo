@@ -30,9 +30,9 @@ public:
     }
 };
 
-enum SortOptions {
-    _datesort_,
-    _areasort_,
+enum class SortOptions::int {
+    datesort = 0,
+    areasort,
     _printrange_
 };
 
