@@ -30,6 +30,7 @@ public:
     }
 };
 
+
 enum class SortOptions  : int {
     datesort = 0,
     areasort,
