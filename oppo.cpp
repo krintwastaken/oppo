@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-const static double PI = 3.14;
+const double PI = 3.14159265358979323846;
 
 class Planet {
 public:
@@ -30,11 +30,11 @@ public:
     }
 };
 
-
 enum class SortOptions  : int {
     datesort = 0,
     areasort,
-    printrange
+    printrange,
+    tests
 };
 
 // Функция для получения имени планеты из строки
@@ -44,7 +44,7 @@ static std::string GetName(std::string& in_string) {
     if (std::regex_search(in_string, match, name_regex)) {
         return match[0];
     }
-    return "";  // Возвращаем пустую строку, если имя не найдено
+    return "N/A";  // Возвращаем пустую строку, если имя не найдено
 }
 
 // Функция для получения даты исследования из строки
@@ -53,18 +53,32 @@ static std::string GetDate(std::string& in_string) {
     std::smatch match;
     if (std::regex_search(in_string, match, date_regex)) {
         std::string date = match[1];    // Получаем дату
-        in_string.replace(in_string.find(date), date.length(), "");
+        int month = std::stoi(date.substr(5, 2)); 
+        int day = std::stoi(date.substr(8, 2));
+        if ((1 <= month && month <= 12) && (1 <= day && day <= 31))
         return date;
     }
-    return "";  // Возвращаем пустую строку, если дата не найдена
+    return "0000.00.00";  // Возвращаем пустую строку, если дата не найдена
 }
 
 // Функция для получения радиуса планеты из строки
 static double GetRadius(std::string in_string) {
-    std::regex radius_regex(R"(\d+(\.\d+)?)");
-    std::smatch match;
-    if (std::regex_search(in_string, match, radius_regex)) {
-        return std::stod(match[0]); // Возвращаем радиус
+    std::regex pattern(R"((\d{4}\.\d{2}\.\d{2})|([-+]?\d+([,\.]\d+)?))");
+    std::smatch matches;
+    std::string fractionalNumber, date;
+    {
+        while (std::regex_search(in_string, matches, pattern)) {
+            if (matches[1].matched) {
+                date = matches[1].str(); // извлекаем дату
+            }
+            else {
+                fractionalNumber = matches[2].str(); // извлекаем дробное число
+            }
+            in_string = matches.suffix().str(); // обновляем строку для следующего поиска
+        }
+        if (fractionalNumber != "" && std::stod(fractionalNumber) >= 0) {
+            return std::stod(fractionalNumber);
+        }
     }
     return 0.0;  // Возвращаем 0.0, если радиус не найден
 }
@@ -97,7 +111,43 @@ auto sortPlanets = [](std::vector<Planet>& vec, SortOptions choice) {
             }
         }
     }
-    };
+ };
+
+void testGetName() {
+    std::string input1 = "Earth 2023.05.20 6371.0";
+    assert(GetName(input1) == "Earth");
+
+    std::string input2 = "2023.05.20 6371.0";
+    assert(GetName(input2) == "N/A");
+
+    std::cout << "GetName test passed." << std::endl;
+}
+
+void testGetDate() {
+    std::string input1 = "Earth 2023.05.20 6371.0";
+    assert(GetDate(input1) == "2023.05.20");
+
+    std::string input2 = "Earth 6371.0";
+    assert(GetDate(input2) == "0000.00.00");
+
+    std::string input3 = "Earth 2023.15.20 6371.0";
+    assert(GetDate(input3) == "0000.00.00");
+
+    std::cout << "GetDate test passed." << std::endl;
+}
+
+void testGetRadius() {
+    std::string input1 = "Earth 2023.05.20 6371.0";
+    assert(GetRadius(input1) == 6371.0);
+
+    std::string input2 = "Earth 2023.05.20";
+    assert(GetRadius(input2) == 0.0);
+
+    std::string input3 = "Earth 2023.05.20 -6371.0";
+    assert(GetRadius(input3) == 0.0);
+
+    std::cout << "GetRadius test passed." << std::endl;
+}
 
 int main() {
     std::vector<Planet> planet_arr;
@@ -117,20 +167,35 @@ int main() {
     }
     input.close();
 
-    std::cout << "Sort by date = 0\nSort by area = 1\nPrint area in range = 2\n";
+    std::cout << "Sort by date = 0\nSort by area = 1\nPrint area in range = 2\nTests = 3\n";
     int choice; std::cin >> choice;
     switch (choice) {
-    case SortOptions::datesort:
-        sortPlanets(planet_arr, _datesort_);
+    case static_cast<int>(SortOptions::datesort):
+    {
+        sortPlanets(planet_arr, SortOptions::datesort);
         break;
-    case SortOptions::areasort:
-        sortPlanets(planet_arr, _areasort_);
+    }
+    case static_cast<int>(SortOptions::areasort):
+    {
+        sortPlanets(planet_arr, SortOptions::areasort);
         break;
-    case SortOptions::printrange:
+    }
+    case static_cast<int>(SortOptions::printrange):
+    {
         float area_min, area_max;
         std::cout << "Bottom area: "; std::cin >> area_min;
         std::cout << "Top area: "; std::cin >> area_max;
         AreaRange(area_min, area_max, planet_arr);
+        break;
+    }
+    case static_cast<int>(SortOptions::tests):
+    {
+        planet_arr.clear();
+        testGetName();
+        testGetDate();
+        testGetRadius();
+        break;
+    }
     default:
         break;
     }
