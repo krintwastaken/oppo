@@ -7,7 +7,7 @@
 #include <vector>
 
 const static double PI = 3.14;
-
+//ваака
 class Planet {
 public:
     std::string name;
